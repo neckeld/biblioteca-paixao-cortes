@@ -1,0 +1,30 @@
+# Dependências
+node_modules/
+**/node_modules/
+
+# Segredos / credenciais — NUNCA versionar
+backend/.env
+.env
+.env.local
+backend/token.json
+backend/credentials.json
+
+# Cache local e fila de sincronização (gerados em runtime)
+backend/cache/
+
+# Build do frontend
+frontend/dist/
+dist/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Config local de ferramentas
+.claude/
+
+# Sistema operacional / editores
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
