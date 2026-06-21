@@ -191,7 +191,9 @@ function BookRow({ book, onEdit }) {
         <td className="px-4 py-3 text-center">
           {book.baixa?.toLowerCase() === 'sim'
             ? <span className="text-xs bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 font-medium px-2 py-0.5 rounded-full">Baixado</span>
-            : <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 font-medium px-2 py-0.5 rounded-full">Ativo</span>}
+            : book.emprestado
+              ? <span className="text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 font-medium px-2 py-0.5 rounded-full">Emprestado</span>
+              : <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 font-medium px-2 py-0.5 rounded-full">Disponível</span>}
         </td>
         <td className="px-4 py-3">
           <button
@@ -207,6 +209,17 @@ function BookRow({ book, onEdit }) {
       {expanded && (
         <tr className="bg-blue-50/40 dark:bg-blue-900/10">
           <td colSpan={7} className="px-4 py-3">
+            {book.emprestado && book.emprestimoAtual && (
+              <div className={`mb-3 px-3 py-2 rounded-lg text-xs font-medium ${
+                book.emprestimoAtual.status === 'atrasado'
+                  ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+                  : 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300'
+              }`}>
+                📕 Emprestado para <strong>{book.emprestimoAtual.nome}</strong> ({book.emprestimoAtual.turmaNome})
+                {' · '}Devolver em {book.emprestimoAtual.devolverEmFmt || '—'}
+                {book.emprestimoAtual.status === 'atrasado' && ' · ⚠️ em atraso'}
+              </div>
+            )}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
               <div><span className="text-gray-400">Editora/Ano</span><p className="text-gray-700 dark:text-gray-300 mt-0.5">{book.editora || '—'}</p></div>
               <div><span className="text-gray-400">Edição</span><p className="text-gray-700 dark:text-gray-300 mt-0.5">{book.edicao || '—'}</p></div>
@@ -232,6 +245,7 @@ export default function Books() {
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState('');
   const [classeFilter, setClasseFilter] = useState('');
+  const [dispFilter, setDispFilter] = useState('');
   const [classes, setClasses] = useState([]);
   const [error, setError] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -243,6 +257,7 @@ export default function Books() {
     const params = new URLSearchParams();
     if (q) params.set('q', q);
     if (classeFilter) params.set('classe', classeFilter);
+    if (dispFilter) params.set('disponibilidade', dispFilter);
     api.get(`/api/books?${params}`)
       .then(r => setBooks(r.data.books))
       .catch(e => setError(e.response?.data?.error || 'Falha ao carregar acervo.'))
@@ -253,7 +268,7 @@ export default function Books() {
     api.get('/api/books/classes').then(r => setClasses(r.data.classes)).catch(() => {});
   }, []);
 
-  useEffect(() => { load(); }, [q, classeFilter]);
+  useEffect(() => { load(); }, [q, classeFilter, dispFilter]);
 
   const openNew  = () => { setEditTarget(null);  setModalOpen(true); };
   const openEdit = (book) => { setEditTarget(book); setModalOpen(true); };
@@ -293,6 +308,11 @@ export default function Books() {
         <select value={classeFilter} onChange={e => setClasseFilter(e.target.value)} className="input sm:w-56">
           <option value="">Todas as classes</option>
           {classes.map(c => <option key={c} value={c}>{c}</option>)}
+        </select>
+        <select value={dispFilter} onChange={e => setDispFilter(e.target.value)} className="input sm:w-48">
+          <option value="">Todos os status</option>
+          <option value="disponivel">Disponíveis</option>
+          <option value="emprestado">Emprestados</option>
         </select>
       </div>
 

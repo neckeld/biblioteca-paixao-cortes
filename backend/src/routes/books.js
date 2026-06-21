@@ -1,5 +1,6 @@
 const express = require('express');
 const { getAllBooks, findBookByTombo, createBook, updateBook, BOOKS_TABS } = require('../services/booksService');
+const { getActiveLoans } = require('../services/loansService');
 
 const router = express.Router();
 
@@ -19,6 +20,38 @@ router.get('/', async (req, res) => {
       );
     }
     if (classe) books = books.filter(b => b.classe.toLowerCase().includes(classe.toLowerCase()));
+
+    // Enriquece cada livro com a situação de empréstimo (join com empréstimos ativos).
+    // Empréstimos não são críticos: se falharem, os livros ainda carregam.
+    try {
+      const activeLoans = await getActiveLoans();
+      const loanByTombo = {};
+      activeLoans.forEach(l => { loanByTombo[String(l.livro).trim()] = l; });
+
+      books = books.map(b => {
+        const loan = loanByTombo[String(b.tombo).trim()];
+        if (!loan) return { ...b, emprestado: false };
+        return {
+          ...b,
+          emprestado: true,
+          emprestimoAtual: {
+            nome: loan.nome,
+            turmaNome: loan.turmaNome,
+            devolverEmFmt: loan.devolverEmFmt,
+            status: loan.status,
+          },
+        };
+      });
+    } catch { /* empréstimos indisponíveis — segue sem o status */ }
+
+    // Filtro opcional de disponibilidade
+    const { disponibilidade } = req.query;
+    if (disponibilidade === 'emprestado') {
+      books = books.filter(b => b.emprestado);
+    } else if (disponibilidade === 'disponivel') {
+      books = books.filter(b => !b.emprestado && String(b.baixa).toLowerCase() !== 'sim');
+    }
+
     res.json({ books, total: books.length });
   } catch (err) {
     console.error('Erro ao listar livros:', err);
