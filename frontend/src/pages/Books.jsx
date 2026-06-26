@@ -17,7 +17,7 @@ const FORM_FIELDS = [
   { key: 'edicao',       label: 'Edição',               required: false, half: true },
   { key: 'colecao',      label: 'Coleção do Acervo',    required: false, half: true },
   { key: 'cor',          label: 'Cor da Etiqueta',      required: false, half: true,
-    options: ['Amarelo', 'Azul', 'Verde', 'Vermelho', 'Laranja', 'Rosa', 'Roxo', 'Branco'] },
+    options: ['Amarelo', 'Azul', 'Azul escuro', 'Verde', 'Vermelho', 'Laranja', 'Rosa', 'Roxo', 'Branco'] },
   { key: 'classe',       label: 'Classe / Gênero',      required: false, half: true },
   { key: 'assunto',      label: 'Assunto / Temas',      required: false, half: false },
   { key: 'cdd',          label: 'Código CDD',           required: false, half: true },
@@ -147,7 +147,7 @@ function BookFormModal({ isOpen, onClose, onSuccess, initial }) {
 
 // ─── Cor da etiqueta visual ───────────────────────────────────────────────────
 const COR_MAP = {
-  amarelo: '#fbbf24', azul: '#3b82f6', verde: '#22c55e',
+  amarelo: '#fbbf24', azul: '#3b82f6', 'azul escuro': '#1e3a8a', verde: '#22c55e',
   vermelho: '#ef4444', laranja: '#f97316', rosa: '#ec4899',
   roxo: '#8b5cf6', branco: '#e5e7eb',
 };
